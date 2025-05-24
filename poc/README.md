@@ -191,14 +191,18 @@ If you need to add storage to `/var/lib/longhorn/` path, you can for the details
 ### Add new Disk or Remove Storage Mount Path
 
 Before starting with process, you need to create a folder where you want to mount the longhorn storage path. Lets say, you want
-to use `/home/data` path and `/data` does not exists under `/home`. So first create that and provide permission with the following commands:
+to use `/home/data/longhorn` path and `/data/longhorn` does not exists under `/home`. So first create that and provide permission with the following commands:
 
 ```
 cd /home
 
 mkdir data
 
-chown -R root:root /home/data
+cd data
+
+mkdir longhorn
+
+chown -R root:root /home/data/longhorn
 ```
 
 #### Add a new Disk
@@ -210,7 +214,7 @@ If you want to add new disk to the node or update the existing `/var/lib/longhor
 * Go to the right in the `Operations` colum and click on the drop down option and click `Edit node and disk`
 * Just add a new disk, click on the `Add Disk` button.
     * Set a disk name (not mandatory)
-    * set Disk path. for example if you want to mount it `/home/data` set this path.
+    * set Disk path. for example if you want to mount it `/home/data/longhorn` set this path.
     * Set reserved storage to 20 Gib (or any amount you want)
     * **Important:** Make sure to enable scheduling. Click on the enable button on Scheduling
     * Apply the changes by click Apply button.
