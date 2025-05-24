@@ -138,6 +138,27 @@ Run on Worker machines node machine `192.168.3.37`:
 curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION="v1.32.4+k3s1" INSTALL_K3S_EXEC="--kubelet-arg=max-pods=500 --node-label=svccontroller.k3s.cattle.io/lbpool=pool3 --node-name=worker-2 --node-label=svccontroller.k3s.cattle.io/enablelb=true" K3S_URL="https://192.168.3.38:6443" K3S_TOKEN="K10fb1307cc6dae263cfd2052149e5d4bcd94c7177157f8c1a5da3bacd179b95d08::server:4e65198a7a0396b09f4f90165053e93b" sh -
 ```
 
+## Nginx Ingress
+
+If the service stays in pending for a long time, then
+edit the service and add the `externalIPs` section in the service.
+
+```
+[root@robi-platform-setup-poc-1 klovercloud-container-platform-setup]# kubectl edit svc -n ingress-nginx ingress-nginx-controller
+
+...
+...
+  allocateLoadBalancerNodePorts: true
+  clusterIP: 10.43.230.250
+  clusterIPs:
+  - 10.43.230.250
+  externalIPs:
+  - 192.168.3.38
+...
+...
+
+```
+
 # Longhorn
 
 ## Installation
@@ -180,6 +201,33 @@ Checkk the UI
 
 ```
 kubectl port-forward -n longhorn-system svc/longhorn-frontend 8080:80
+```
+### Create Ingress
+```
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  name: longhorn-frontend
+  namespace: longhorn-system
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: longhorn.192.168.3.38.nip.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: longhorn-frontend
+                port:
+                  number: 80
+#  tls:
+#    - hosts:
+#        - keycloak.eks.hkmd7dff3.klovercloud.io
+#      secretName: wild-cert-secret
 ```
 
 ## Storage Path
