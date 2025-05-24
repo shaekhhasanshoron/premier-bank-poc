@@ -102,8 +102,22 @@ yum install git iscsi-initiator-utils nfs-utils -y
 ## Install K3s
 
 ```
-curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION="v1.32.4+k3s1" INSTALL_K3S_EXEC="--cluster-cidr=10.42.0.0/16 --service-cidr=10.43.0.0/16 --disable traefik --kubelet-arg=max-pods=300 --node-label=svccontroller.k3s.cattle.io/lbpool=pool1 --node-label=svccontroller.k3s.cattle.io/enablelb=true" sh -
+curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION="v1.32.4+k3s1" INSTALL_K3S_EXEC="--cluster-cidr=10.42.0.0/16 --service-cidr=10.43.0.0/16 --disable traefik --kubelet-arg=max-pods=500 --node-label=svccontroller.k3s.cattle.io/lbpool=pool1 --node-label=svccontroller.k3s.cattle.io/enablelb=true" sh -
 ```
+
+If `/usr/local/bin` does not exits then add it
+```
+echo 'export PATH=$PATH:/usr/local/bin' >> ~/.bashrc
+source ~/.bashrc
+```
+
+Copy kube-config file as `~/.kube/config`
+```
+mkdir -p ~/.kube
+
+cp /etc/rancher/k3s/k3s.yaml  ~/.kube/config
+```
+
 
 ## Install K3s Agent
 
