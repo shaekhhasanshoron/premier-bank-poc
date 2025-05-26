@@ -1,0 +1,147 @@
+# Webclient ingress networking.v1 config:
+---
+kind: Ingress
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: mongo-client-default
+  namespace: klovercloud
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: '3600'
+    nginx.ingress.kubernetes.io/proxy-read-timeout: '3600'
+    nginx.ingress.kubernetes.io/proxy-send-timeout: '3600'
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: mongo-client.192.168.3.38.nip.io
+      http:
+        paths:
+          - path: "/"
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: mongo-client
+                port:
+                  number: 80
+#  tls:
+#    - hosts:
+#        - mongo-client.robi-poc.klovercloud.io
+#      secretName: wild-cert-secret
+
+# webclient configmap
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: envar-config-mongo-client
+  namespace: klovercloud
+  labels:
+    app: mongo-client
+data:
+  HOST: 0.0.0.0
+  PORT: '80'
+
+# webclient service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-client
+  namespace: klovercloud
+  labels:
+    app: mongo-client
+    deployedName: mongo-client
+spec:
+  ports:
+    - name: http-rest
+      port: 80
+      protocol: TCP
+      targetPort: 80
+      nodePort: 0
+  selector:
+    app: mongo-client
+    deployedName: mongo-client
+  type: ''
+  clusterIP: ''
+  externalName: ''
+
+
+# webclient deployment
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-client
+  namespace: klovercloud
+  labels:
+    app: mongo-client
+    deployedName: mongo-client
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo-client
+      deployedName: mongo-client
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 1
+  minReadySeconds: 5
+  template:
+    metadata:
+      name: ''
+      annotations:
+        kubernetes.io/egress-bandwidth: 25M
+        kubernetes.io/ingress-bandwidth: 25M
+        sidecar.istio.io/inject: 'false'
+      labels:
+        app: mongo-client
+        deployedName: mongo-client
+    spec:
+      securityContext:
+        fsGroup: 2000
+      terminationGracePeriodSeconds: 5
+      serviceAccount: ''
+      affinity:
+      containers:
+        - name: admin-mongo
+          imagePullPolicy: IfNotPresent
+          image: quay.io/klovercloud/adminmongo:v0.1.0
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          env:
+          envFrom:
+            - configMapRef:
+                name: envar-config-mongo-client
+          ports:
+            - containerPort: 80
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: "/"
+              port: 80
+            initialDelaySeconds: 20
+            periodSeconds: 5
+            successThreshold: 1
+            failureThreshold: 50
+            timeoutSeconds: 3
+          livenessProbe:
+            httpGet:
+              path: "/"
+              port: 80
+            initialDelaySeconds: 20
+            periodSeconds: 5
+            successThreshold: 1
+            failureThreshold: 50
+            timeoutSeconds: 3
+          securityContext:
+          command:
+          args:
+          volumeMounts:
+      volumes:
+      imagePullSecrets: []
