@@ -262,7 +262,7 @@ If you want to add new disk to the node or update the existing `/var/lib/longhor
 * Go to the right in the `Operations` colum and click on the drop down option and click `Edit node and disk`
 * Just add a new disk, click on the `Add Disk` button.
     * Set a disk name (not mandatory)
-    * set Disk path. for example if you want to mount it `/home/data/longhorn` set this path.
+    * set Disk path. for example if you want to mount it `/home/data/longhorn/` set this path.
     * Set reserved storage to 20 Gib (or any amount you want)
     * **Important:** Make sure to enable scheduling. Click on the enable button on Scheduling
     * Apply the changes by click Apply button.
