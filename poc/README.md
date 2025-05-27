@@ -310,6 +310,41 @@ chmod 700 get_helm.sh
 ```
 git clone https://github.com/shaekhhasanshoron/klovercloud-container-platform-setup.git
 ```
+## Kubernetes Deployments
+We had to comment out liveness and readiness probe from some of the deployments 
 
+## Gitlab Setup
+* Here, I have followed the instruction of installing git Through Helm [from here](https://github.com/shaekhhasanshoron/klovercloud-container-platform-setup/tree/master/manifests/gitlab#gitlab). 
+Now since the console ingress does not have tls `console.192.168.3.38.nip` and the ip is private so we need to allow the local network.
+* While installing, since the network was slow so I had to comment the liveness and readiness probe of few deployments
+  * gitlab-webserver-default
+  * gitlab-sidekick..
+
+## Harbor
+* We have followed the instruction [from here](https://github.com/shaekhhasanshoron/klovercloud-container-platform-setup?tab=readme-ov-file#install-harbor).
+  We have installed harbor without Tls `http://harbor.192.168.3.38.nip`, to make sure k3s containerd pull the image 
+  Since we have uses k3s for master and agent nodes. First we need to create a `registries.yaml` file if does not exists.
+   ````
+    sudo mkdir -p /etc/rancher/k3s
+    nano /etc/rancher/k3s/registries.yaml
+   ````
+    Add the following configuration
+    ```
+    mirrors:
+      "harbor.192.168.3.38.nip.io":
+        endpoint:
+          - "https://harbor.192.168.3.38.nip.io"
+    
+    configs:
+      "harbor.192.168.3.38.nip.io":
+        tls:
+          insecure_skip_verify: true
+    ```
+    Restart the k3s and k3s agent.
+    ```
+  sudo systemctl restart k3s
+
+  sudo systemctl restart k3s-agent
+  ```
 
 
